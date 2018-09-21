@@ -1,0 +1,116 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.3.RELEASE")
+        classpath ("io.spring.gradle:dependency-management-plugin:0.5.6.RELEASE")
+        classpath("com.querydsl:querydsl-apt:4.1.2:jpa")
+        classpath("mysql:mysql-connector-java:8.0.11")
+    }
+}
+
+def projectName = "UserService"
+def projectTitle = "UserService"
+def version = "1.0"
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+    compile("org.springframework.boot:spring-boot-starter-web")
+    //compile("org.springframework.boot:spring-boot-starter-security")
+    compile("org.apache.tomcat.embed:tomcat-embed-el")
+    compile("org.hibernate.validator:hibernate-validator")
+    compile("org.springframework.boot:spring-boot-starter-data-jpa")
+    compile("org.springframework:spring-jdbc")
+    compile("com.h2database:h2")
+    compile("com.querydsl:querydsl-apt:4.1.2:jpa")
+    compile files("C:/Users/thomsonp/.m2/repository/ptconsultancy/Domain/Domain.jar")
+
+    compile("mysql:mysql-connector-java:8.0.11")
+
+    testCompile("junit:junit:4.12")
+    testCompile("org.mockito:mockito-core:2.1.0")
+    testCompile("org.powermock:powermock-module-junit4:1.7.0RC2")
+    testCompile("org.powermock:powermock-api-mockito2:1.7.0RC2")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile("org.springframework.security:spring-security-test")
+}
+
+def generatedSources = "src/main/generated"
+def generatedOutputDir = file("$generatedSources")
+
+def jenkins = "C:/Program Files (x86)/Jenkins/workspace"
+def testEnvironment = "C:/PTConsultancy/LocalTestEnvironment"
+def testDir = "${testEnvironment}/${projectName}"
+def buildDir = "${jenkins}/${projectName}"
+def localBuildDir = "C:/GradleTutorials/${projectName}"
+
+compileJava() {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+
+    doFirst {
+        delete generatedOutputDir
+        generatedOutputDir.mkdirs()
+        options.compilerArgs = [
+                '-s', "${generatedOutputDir.getAbsolutePath()}"
+        ]
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += generatedOutputDir
+        }
+    }
+}
+
+bootJar {
+    manifest {
+        attributes 'Implementation-Title': projectName,
+                'Implementation-Version': version
+    }
+}
+
+task setBuildPaths {
+    println "Setting up test environment"
+
+    println "Jenkins directory - ${jenkins}"
+    println "Build directory - ${buildDir}"
+
+    delete fileTree("${testDir}")
+    file("${testDir}").mkdirs()
+}
+
+task copyFiles(dependsOn: test) {
+    doLast {
+        println "Copying files to testEnvironment now"
+        copy {
+            from file("${buildDir}/build/libs")
+            include "*.jar"
+            into file("${testEnvironment}/${projectName}")
+        }
+
+        def runnableFile = "${projectName}.jar"
+        new File("${testEnvironment}/${projectName}/run.bat").text = """
+start /min java -jar $runnableFile
+"""
+    }
+}
