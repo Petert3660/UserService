@@ -3,6 +3,7 @@ package com.ptconsultancy.controllers;
 import com.ptconsultancy.admin.security.SecurityTokenManager;
 import com.ptconsultancy.entities.User;
 import com.ptconsultancy.repositories.UserRepository;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +30,10 @@ public class UserController {
 
         if (token.equals(securityTokenManager.getValue())) {
             securityTokenManager.resetToken();
-            output = userRepository.findByUsername(username).get(0);
+            List<User> users = userRepository.findByUsername(username);
+            if (users.size() == 1) {
+                output = users.get(0);
+            }
         }
 
         return output;
