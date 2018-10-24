@@ -22,7 +22,7 @@ public class UserController {
         this.securityTokenManager = securityTokenManager;
     }
 
-    @RequestMapping(path="/getUser/{username}/{token}", method= RequestMethod.GET)
+    @RequestMapping(path="/getUser/{username}/{token}", method=RequestMethod.GET)
     public User getUser(@PathVariable String username, @PathVariable String token) {
 
         User output = null;
