@@ -1,7 +1,10 @@
 package com.ptconsultancy;
 
 import com.ptconsultancy.admin.adminsupport.BuildVersion;
+import com.ptconsultancy.entities.User;
 import com.ptconsultancy.messages.MessageHandler;
+import com.ptconsultancy.repositories.UserRepository;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,9 @@ public class Application implements CommandLineRunner {
     private static final String SERVER_PORT_PROPERTY = "server.port";
 
     private static final int EXIT_STATUS = 0;
+
+    @Autowired
+    UserRepository userRepository;
 
     @Autowired
     private Environment env;
@@ -63,17 +69,17 @@ public class Application implements CommandLineRunner {
     // Use this method to set up test data from the application.properties file
     private void populateDatabase() {
 
-//        if (customerRepository.findCustomerById((long) 11111).size() == 0) {
-//            String prop;
-//            int i = 1;
-//            do {
-//                String address = "customer" + String.valueOf(i++);
-//                prop = env.getProperty(address);
-//                if (!StringUtils.isEmpty(prop)) {
-//                    String[] custDetails = prop.split(", ");
-//                    customerRepository.save(new Customer(Long.parseLong(custDetails[0]), custDetails[1], custDetails[2], new Address()));
-//                }
-//            } while (!StringUtils.isEmpty(prop));
-//        }
+        if (userRepository.findByUsername("superuser") != null){
+            String prop;
+            int i = 1;
+            do {
+                String user = "user" + String.valueOf(i++);
+                prop = env.getProperty(user);
+                if (!StringUtils.isEmpty(prop)) {
+                    String[] userDetails = prop.split(", ");
+                    userRepository.save(new User(userDetails[0], userDetails[1], userDetails[2]));
+                }
+            } while (!StringUtils.isEmpty(prop));
+        }
     }
 }
