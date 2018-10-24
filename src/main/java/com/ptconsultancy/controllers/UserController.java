@@ -1,7 +1,11 @@
 package com.ptconsultancy.controllers;
 
+import static com.ptconsultancy.application.ApplicationConstants.SUPERUSER;
+
+import com.ptconsultancy.admin.adminsupport.ControllerConstants;
 import com.ptconsultancy.admin.security.SecurityTokenManager;
 import com.ptconsultancy.entities.User;
+import com.ptconsultancy.messages.PropertiesHandler;
 import com.ptconsultancy.repositories.UserRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +21,14 @@ public class UserController {
 
     private SecurityTokenManager securityTokenManager;
 
+    private PropertiesHandler propertiesHandler;
+
     @Autowired
-    public UserController(UserRepository userRepository, SecurityTokenManager securityTokenManager) {
+    public UserController(UserRepository userRepository, SecurityTokenManager securityTokenManager,
+        PropertiesHandler propertiesHandler) {
         this.userRepository = userRepository;
         this.securityTokenManager = securityTokenManager;
+        this.propertiesHandler = propertiesHandler;
     }
 
     @RequestMapping(path="/getUser/{username}/{token}", method=RequestMethod.GET)
@@ -33,6 +41,24 @@ public class UserController {
             List<User> users = userRepository.findByUsername(username);
             if (users.size() == 1) {
                 output = users.get(0);
+            }
+        }
+
+        return output;
+    }
+
+    @RequestMapping(path="/getAllUsers/{username}/{userId}/{pass}/{token}", method=RequestMethod.GET)
+    public List<User> getAllUsers(@PathVariable String username, @PathVariable String userId,
+        @PathVariable String pass, @PathVariable String token) {
+
+        List<User> output = null;
+
+        if (username.equals(SUPERUSER)) {
+            if (token.equals(securityTokenManager.getValue())) {
+                securityTokenManager.resetToken();
+                if (userId.equals(propertiesHandler.getProperty(ControllerConstants.ID_KEY)) && pass.equals(propertiesHandler.getProperty(ControllerConstants.PASS_KEY))) {
+                    output = userRepository.findByUsername(username);
+                }
             }
         }
 
