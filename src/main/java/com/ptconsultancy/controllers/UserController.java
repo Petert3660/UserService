@@ -10,6 +10,7 @@ import com.ptconsultancy.repositories.UserRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,5 +64,30 @@ public class UserController {
         }
 
         return output;
+    }
+
+    @RequestMapping(path="/createUser/{userId}/{pass}/{token}", method=RequestMethod.POST)
+    public String saveUser(@RequestBody User user, @PathVariable String userId, @PathVariable String pass, @PathVariable String token) {
+
+        if (token.equals(securityTokenManager.getValue())) {
+            securityTokenManager.resetToken();
+
+            for (User userEntity : userRepository.findAll()) {
+                if (user.getUsername().equals(userEntity.getUsername())) {
+                    return "User already exists - cannot add";
+                }
+            }
+
+            User createdUser = new User(user.getUsername(), user.getPassword(), user.getRole());
+
+            if (userId.equals(propertiesHandler.getProperty(ControllerConstants.ID_KEY)) && pass.equals(propertiesHandler.getProperty(ControllerConstants.PASS_KEY))) {
+                userRepository.save(createdUser);
+                return "New user successfully added";
+            } else {
+                return "Authentication failed - bnew user not added";
+            }
+        } else {
+            return "Security check failed - new user not added";
+        }
     }
 }
