@@ -67,7 +67,7 @@ public class UserController {
     }
 
     @RequestMapping(path="/createUser/{userId}/{pass}/{token}", method=RequestMethod.POST)
-    public String saveUser(@RequestBody User user, @PathVariable String userId, @PathVariable String pass, @PathVariable String token) {
+    public String saveUser(@RequestBody() User user, @PathVariable String userId, @PathVariable String pass, @PathVariable String token) {
 
         if (token.equals(securityTokenManager.getValue())) {
             securityTokenManager.resetToken();
@@ -84,7 +84,7 @@ public class UserController {
                 userRepository.save(createdUser);
                 return "New user successfully added";
             } else {
-                return "Authentication failed - bnew user not added";
+                return "Authentication failed - new user not added";
             }
         } else {
             return "Security check failed - new user not added";
