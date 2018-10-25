@@ -1,5 +1,7 @@
 package com.ptconsultancy;
 
+import static com.ptconsultancy.application.ApplicationConstants.SUPERUSER;
+
 import com.ptconsultancy.admin.adminsupport.BuildVersion;
 import com.ptconsultancy.entities.User;
 import com.ptconsultancy.messages.MessageHandler;
@@ -69,7 +71,7 @@ public class Application implements CommandLineRunner {
     // Use this method to set up test data from the application.properties file
     private void populateDatabase() {
 
-        if (userRepository.findByUsername("superuser") != null){
+        if (userRepository.findByUsername(SUPERUSER).isEmpty()){
             String prop;
             int i = 1;
             do {
