@@ -58,7 +58,7 @@ public class UserController {
             if (token.equals(securityTokenManager.getValue())) {
                 securityTokenManager.resetToken();
                 if (userId.equals(propertiesHandler.getProperty(ControllerConstants.ID_KEY)) && pass.equals(propertiesHandler.getProperty(ControllerConstants.PASS_KEY))) {
-                    output = userRepository.findByUsername(username);
+                    output = (List<User>) userRepository.findAll();
                 }
             }
         }
@@ -88,6 +88,28 @@ public class UserController {
             }
         } else {
             return "Security check failed - new user not added";
+        }
+    }
+
+    @RequestMapping(path="/deleteUser/{username}/{userId}/{pass}/{token}", method=RequestMethod.DELETE)
+    public String removeUser(@PathVariable String username, @PathVariable String userId, @PathVariable String pass,
+         @PathVariable String token) {
+
+        if (token.equals(securityTokenManager.getValue())) {
+            securityTokenManager.resetToken();
+            if (userId.equals(propertiesHandler.getProperty(ControllerConstants.ID_KEY)) && pass.equals(propertiesHandler.getProperty(ControllerConstants.PASS_KEY))) {
+                List<User> entities = userRepository.findByUsername(username);
+                if (entities.size() == 1) {
+                    userRepository.delete(entities.get(0));
+                    return "User deleted";
+                } else {
+                    return "Could not find user";
+                }
+            } else {
+                return "Authentication failed - user nor deleted";
+            }
+        } else {
+            return "Security check failed - user not deleted";
         }
     }
 }
